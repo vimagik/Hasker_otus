@@ -1,0 +1,42 @@
+{% extends 'base.html'%}
+{% block title %}Редактирование профиля{% endblock %}
+
+{% block leftbody %}
+    {% if user.is_authenticated %}
+    <h2>Редактирование профиля</h2>
+    <div class="row">
+      <div class="span8">
+        <div class="row">
+          <div class="span4">
+              <ul class="thumbnails">
+              <li class="span3">
+                <a class="thumbnail">
+                  <img src="{{ photo_url }}" alt="">
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div class="span4">
+              <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <input class="btn" type="submit" value="Сохранить изменения">
+              </form>
+              <form action="/">
+                  <button class="btn btn-primary" type="submit">Отмена</button>
+              </form>
+          </div>
+        </div>
+      </div>
+    </div>
+        {% if success is not None %}
+            <span class="label label-success">{{ success }}</span>
+        {% endif %}
+        {% if important is not None %}
+            <span class="label label-important">{{ important }}</span>
+        {% endif %}
+    {% else %}
+    <span class="label label-important">Для редактирования профиля необходимо авторизоваться</span>
+    {% endif %}
+
+{% endblock %}
