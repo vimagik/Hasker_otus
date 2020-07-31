@@ -7,10 +7,16 @@ from django.contrib.auth.models import User
 
 from registration.forms import UserForm, UserProfileForm
 from registration.models import UserProfile
+from questions.views import get_trends
 
 
 class Login(TemplateView):
     template_name = 'registration/login.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        get_trends(context)
+        return context
 
     def post(self, request):
         username = request.POST['username']
@@ -33,6 +39,7 @@ class CreateUserView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = UserForm()
+        get_trends(context)
         return context
 
     def post(self, request):
@@ -59,6 +66,7 @@ class EditProfileView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = UserProfileForm()
+        get_trends(context)
         return context
 
     def collect_data(self, request):
@@ -70,7 +78,6 @@ class EditProfileView(TemplateView):
             profile = UserProfile.objects.filter(user=request.user)
             if profile is not None:
                 photo_url = profile[0].photo.url
-                # self._init_photo = profile[0].photo
         context = {
             'form': UserProfileForm(initial=data),
             'photo_url': photo_url,

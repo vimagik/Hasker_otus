@@ -61,8 +61,14 @@
                 <h2>Тренды</h2>
             </div>
             <div>
-                {% block trands %}
-                {% endblock %}
+                 <table class="table">
+                    {% for trend in trends %}
+                    <tr>
+                        <td><span class="badge badge-info">{{ trend.count }}</span></td>
+                        <td>{{ trend.question__title }}</td>
+                    </tr>
+                    {% endfor %}
+                 </table>
             </div>
         </div>
       </div>

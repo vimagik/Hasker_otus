@@ -20,7 +20,6 @@ class Questions(models.Model):
         verbose_name = 'Question'
         verbose_name_plural = 'Questions'
 
-    #djn djdjdj
     title = models.CharField(max_length=50)
     body = models.TextField()
     author = models.ForeignKey(
