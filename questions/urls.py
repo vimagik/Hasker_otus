@@ -1,8 +1,10 @@
 from django.urls import path
-from . import views
+from django.contrib.auth.decorators import login_required
+from questions.views import *
 
 app_name = 'questions'
 
 urlpatterns = [
-    path('', views.index, name='index'),
+    path('', index, name='index'),
+    path('createquestion/', login_required(NewQuestionView.as_view()), name='createquestion')
 ]

@@ -20,8 +20,8 @@ class Questions(models.Model):
         verbose_name = 'Question'
         verbose_name_plural = 'Questions'
 
-    title = models.CharField(max_length=50)
-    body = models.TextField()
+    title = models.CharField(max_length=50, verbose_name='Заголовок')
+    body = models.TextField(verbose_name='Текст вопроса')
     author = models.ForeignKey(
         User,
         on_delete=models.DO_NOTHING

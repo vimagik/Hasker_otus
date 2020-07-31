@@ -53,9 +53,13 @@
             {% endblock %}
         </div>
         <div class="span4">
+        {% if user.is_authenticated %}
             <div class="pagination-centered">
-                <button class="btn btn-primary" type="button">Задать вопрос</button>
+                 <form action="{% url 'questions:createquestion' %}">
+                        <button class="btn btn-primary" type="submit">Задать вопрос</button>
+                 </form>
             </div>
+        {% endif %}
             <br>
             <div class="pagination-centered">
                 <h2>Тренды</h2>
