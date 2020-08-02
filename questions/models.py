@@ -58,7 +58,7 @@ class Answers(models.Model):
         verbose_name = 'Answer'
         verbose_name_plural = 'Answers'
 
-    body = models.TextField(max_length=1000)
+    body = models.TextField(max_length=1000, verbose_name='Ваш ответ')
     author = models.ForeignKey(
         User,
         on_delete=models.DO_NOTHING

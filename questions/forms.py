@@ -1,5 +1,5 @@
 from django import forms
-from questions.models import Questions
+from questions.models import Questions, Answers
 
 
 class QuestionCreateForm(forms.ModelForm):
@@ -17,3 +17,9 @@ class QuestionCreateForm(forms.ModelForm):
             raise forms.ValidationError('Укажите не более трех тегов')
         return data
 
+
+class AnswerCreateForm(forms.ModelForm):
+
+    class Meta:
+        model = Answers
+        fields = ['body']

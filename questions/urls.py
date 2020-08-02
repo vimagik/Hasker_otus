@@ -6,5 +6,6 @@ app_name = 'questions'
 
 urlpatterns = [
     path('', index, name='index'),
-    path('createquestion/', login_required(NewQuestionView.as_view()), name='createquestion')
+    path('createquestion/', login_required(CreateQuestionView.as_view()), name='createquestion'),
+    path('question/<int:pk>/', QuestionView.as_view(), name='questionview')
 ]
