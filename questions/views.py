@@ -2,7 +2,7 @@ from django.shortcuts import render, HttpResponse
 from django.db.models import Count
 from django.views.generic import TemplateView
 from registration.models import UserProfile
-from questions.models import QuestionVotes, Questions
+from questions.models import QuestionVotes, Questions, Tags
 
 from questions.forms import QuestionCreateForm
 
@@ -39,5 +39,10 @@ class NewQuestionView(TemplateView):
                 author=request.user
             )
             new_question.save()
+            for tag in form.cleaned_data['tags'].split(','):
+                new_tag, _ = Tags.objects.get_or_create(
+                    name=tag
+                )
+                new_question.tags.add(new_tag)
             return HttpResponse('Форма успшено сохранена')
         return render(request, self.template_name, {'form': form})

@@ -82,6 +82,7 @@ class EditProfileView(TemplateView):
             'form': UserProfileForm(initial=data),
             'photo_url': photo_url,
         }
+        get_trends(context)
         return context
 
     def get(self, request, *args, **kwargs):
@@ -90,24 +91,22 @@ class EditProfileView(TemplateView):
 
     def post(self, request):
         form = UserProfileForm(request.POST, request.FILES)
-        errors = False
+        renewal = False
         if form.is_valid():
             email = form.cleaned_data['email']
             if email != request.user.email:
                 request.user.email = email
                 request.user.save()
+                renewal = True
             photo = form.cleaned_data['photo']
             if photo:
                 profile = UserProfile.objects.get(user=request.user)
                 profile.photo = photo
                 profile.save()
-            else:
-                errors = True
-        else:
-            errors = True
+                renewal = True
         context = self.collect_data(request)
-        if errors:
-            context['important'] = "Ошибка при обновлении профиля"
-        else:
+        if renewal:
             context['success'] = "Профиль обновлен"
+        else:
+            context['important'] = "Нет данных для обновления"
         return render(request, self.template_name, context)
