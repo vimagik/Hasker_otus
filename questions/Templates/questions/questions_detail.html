@@ -6,11 +6,13 @@
     <br>
     <div class="row-fluid">
         <div class="span1">
-            <button class="btn" type="button"><i class="icon-chevron-up"></i></button>
-            <br>
+            <form action="{% url 'questions:questionvote' object.id %}">
+                <button class="btn" type="submit" {{ disabled }}><i class="icon-chevron-up"></i></button>
+            </form>
             <span class="badge badge-inverse">{{ number_question_votes }}</span>
-            <br>
-            <button class="btn" type="button"><i class="icon-chevron-down"></i></button>
+            <form action="{% url 'questions:questionunvote' object.id %}">
+                <button class="btn" type="submit" {{ disabled }}><i class="icon-chevron-down"></i></button>
+            </form>
         </div>
 
         <div class="span11">
@@ -27,11 +29,13 @@
           {% for value in object.answers_set.all %}
                 <tr>
                      <td>
-                         <button class="btn" type="button"><i class="icon-chevron-up"></i></button>
-                         <br>
+                         <form action="{% url 'questions:answervote' object.id value.id %}">
+                             <button class="btn" type="submit" {{ disabled }}><i class="icon-chevron-up" ></i></button>
+                         </form>
                          <span class="badge badge-success">{{ vote_answers|getvalue:value.id }}</span>
-                         <br>
-                         <button class="btn" type="button"><i class="icon-chevron-down"></i></button>
+                         <form action="{% url 'questions:answerunvote' object.id value.id %}">
+                             <button class="btn" type="submit" {{ disabled }}><i class="icon-chevron-down"></i></button>
+                         </form>
                     </td>
 
                      <td>

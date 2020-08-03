@@ -1,6 +1,6 @@
 from django.shortcuts import render, HttpResponse, redirect
 from django.db.models import Count
-from django.views.generic import TemplateView, DetailView
+from django.views.generic import TemplateView, DetailView, RedirectView
 from registration.models import UserProfile
 from questions.models import QuestionVotes, Questions, Tags, Answers, AnswerVotes
 
@@ -44,7 +44,7 @@ class CreateQuestionView(TemplateView):
                     name=tag
                 )
                 new_question.tags.add(new_tag)
-            return HttpResponse('Форма успшено сохранена')
+            return redirect(f'/question/{new_question.id}/')
         return render(request, self.template_name, {'form': form})
 
 
@@ -60,10 +60,13 @@ class QuestionView(DetailView):
         vote_answers = dict()
         for answer in answers:
             vote_answers[answer.id] = AnswerVotes.objects.filter(answer=answer).count()
+        if not self.request.user.is_authenticated:
+            context['disabled'] = 'disabled'
         context['answers'] = answers
         context['vote_answers'] = vote_answers
         form = AnswerCreateForm()
         context['form'] = form
+
         get_trends(context)
         return context
 
@@ -80,3 +83,59 @@ class QuestionView(DetailView):
         return redirect(f'/question/{pk}')
 
 
+class QuestionVoteView(RedirectView):
+
+    def get_redirect_url(self, *args, **kwargs):
+        pk = kwargs['pk']
+        new_vote, created = QuestionVotes.objects.get_or_create(
+            author=self.request.user,
+            question_id=pk
+        )
+        if created:
+            new_vote.save()
+        self.url = f"/question/{pk}"
+        return super().get_redirect_url(*args, **kwargs)
+
+
+class QuestionUnVoteView(RedirectView):
+
+    def get_redirect_url(self, *args, **kwargs):
+        pk = kwargs['pk']
+        vote = QuestionVotes.objects.filter(
+            author=self.request.user,
+            question_id=pk
+        ).first()
+        if vote:
+            vote.delete()
+        self.url = f"/question/{pk}"
+        return super().get_redirect_url(*args, **kwargs)
+
+
+class AnswerVoteView(RedirectView):
+
+    def get_redirect_url(self, *args, **kwargs):
+        pk = kwargs['pk']
+        id_answer = kwargs['id_answer']
+        new_vote_answer, created = AnswerVotes.objects.get_or_create(
+            author=self.request.user,
+            answer_id=id_answer
+        )
+        if created:
+            new_vote_answer.save()
+        self.url = f"/question/{pk}"
+        return super().get_redirect_url(*args, **kwargs)
+
+
+class AnswerUnVoteView(RedirectView):
+
+    def get_redirect_url(self, *args, **kwargs):
+        pk = kwargs['pk']
+        id_answer = kwargs['id_answer']
+        vote_answer = AnswerVotes.objects.filter(
+            author=self.request.user,
+            answer_id=id_answer
+        ).first()
+        if vote_answer:
+            vote_answer.delete()
+        self.url = f"/question/{pk}"
+        return super().get_redirect_url(*args, **kwargs)
