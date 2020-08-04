@@ -36,6 +36,15 @@
                          <form action="{% url 'questions:answerunvote' object.id value.id %}">
                              <button class="btn" type="submit" {{ disabled }}><i class="icon-chevron-down"></i></button>
                          </form>
+                         <form action="">
+                             <button class="btn" type="submit" {{ disabled_correct_answer }}>
+                                 {% if value.correct %}
+                                 <i class="icon-star">
+                                 {% else %}
+                                 <i class="icon-star-empty">
+                                 {% endif %}
+                                 </i></button>
+                         </form>
                     </td>
 
                      <td>

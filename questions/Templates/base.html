@@ -69,7 +69,7 @@
                     {% for trend in trends %}
                     <tr>
                         <td><span class="badge badge-info">{{ trend.count }}</span></td>
-                        <td>{{ trend.question__title }}</td>
+                        <td><a href="{% url 'questions:questionview' trend.question_id %}">{{ trend.question__title }}</a></td>
                     </tr>
                     {% endfor %}
                  </table>

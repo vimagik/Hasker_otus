@@ -8,7 +8,7 @@ from questions.forms import QuestionCreateForm, AnswerCreateForm
 
 
 def get_trends(context: dict):
-    trends = QuestionVotes.objects.values('question__title').annotate(count=Count('question')).order_by('-count')[:20]
+    trends = QuestionVotes.objects.values('question__title', 'question_id').annotate(count=Count('question')).order_by('-count')[:20]
     context['trends'] = trends
 
 
@@ -60,7 +60,11 @@ class QuestionView(DetailView):
         vote_answers = dict()
         for answer in answers:
             vote_answers[answer.id] = AnswerVotes.objects.filter(answer=answer).count()
-        if not self.request.user.is_authenticated:
+        if self.request.user.is_authenticated:
+            if self.request.user != self.object.author:
+                context['disabled_correct_answer'] = 'disabled'
+        else:
+            context['disabled_correct_answer'] = 'disabled'
             context['disabled'] = 'disabled'
         context['answers'] = answers
         context['vote_answers'] = vote_answers
