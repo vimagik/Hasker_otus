@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <title>{% block title %}{% endblock %}</title>
     {% load static %}
-    <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet">
     <link href="{% static 'css/bootstrap-responsive.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet">
     <style>
         .red {  color: #d14;}
     </style>
@@ -69,7 +69,7 @@
                     {% for trend in trends %}
                     <tr>
                         <td><span class="badge badge-info">{{ trend.count }}</span></td>
-                        <td><a href="{% url 'questions:questionview' trend.question_id %}">{{ trend.question__title }}</a></td>
+                        <td><a href="{% url 'questions:questionview' trend.id %}">{{ trend.title }}</a></td>
                     </tr>
                     {% endfor %}
                  </table>

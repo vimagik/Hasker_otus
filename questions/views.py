@@ -1,6 +1,6 @@
 from django.shortcuts import render, HttpResponse, redirect
 from django.db.models import Count
-from django.views.generic import TemplateView, DetailView, RedirectView
+from django.views.generic import TemplateView, DetailView, RedirectView, ListView
 from registration.models import UserProfile
 from questions.models import QuestionVotes, Questions, Tags, Answers, AnswerVotes
 
@@ -8,7 +8,7 @@ from questions.forms import QuestionCreateForm, AnswerCreateForm
 
 
 def get_trends(context: dict):
-    trends = QuestionVotes.objects.values('question__title', 'question_id').annotate(count=Count('question')).order_by('-count')[:20]
+    trends = Questions.objects.annotate(count=Count('questionvotes')).order_by('-count')[:20]
     context['trends'] = trends
 
 
@@ -19,6 +19,18 @@ def index(request):
         context['photo'] = profile[0].photo
     get_trends(context)
     return render(request, 'questions/index.html', context)
+
+
+class IndexView(ListView):
+    model = Questions
+    template_name = 'questions/index.html'
+    paginate_by = 2
+    queryset = Questions.objects.annotate(count=Count('questionvotes')).order_by('-count')
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        get_trends(context)
+        return context
 
 
 class CreateQuestionView(TemplateView):

@@ -5,7 +5,7 @@ from questions.views import *
 app_name = 'questions'
 
 urlpatterns = [
-    path('', index, name='index'),
+    path('', IndexView.as_view(), name='index'),
     path('createquestion/', login_required(CreateQuestionView.as_view()), name='createquestion'),
     path('question/<int:pk>/', QuestionView.as_view(), name='questionview'),
     path('question/<int:pk>/vote/', login_required(QuestionVoteView.as_view()), name='questionvote'),
