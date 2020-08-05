@@ -143,3 +143,23 @@ class AnswerUnVoteView(RedirectView):
             vote_answer.delete()
         self.url = f"/question/{pk}"
         return super().get_redirect_url(*args, **kwargs)
+
+
+class AnswerSelectRightView(RedirectView):
+
+    def get_redirect_url(self, *args, **kwargs):
+        pk = kwargs['pk']
+        current_question = Questions.objects.get(pk=pk)
+        if self.request.user != current_question.author:
+            return super().get_redirect_url(*args, **kwargs)
+        id_answer = kwargs['id_answer']
+        old_correct_answer = Answers.objects.filter(correct=True).first()
+        if old_correct_answer:
+            old_correct_answer.correct = False
+            old_correct_answer.save()
+        answer = Answers.objects.get(pk=id_answer)
+        answer.correct = True
+        answer.save()
+
+        self.url = f"/question/{pk}"
+        return super().get_redirect_url(*args, **kwargs)

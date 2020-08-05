@@ -12,4 +12,6 @@ urlpatterns = [
     path('question/<int:pk>/unvote/', login_required(QuestionUnVoteView.as_view()), name='questionunvote'),
     path('question/<int:pk>/<int:id_answer>/vote/', login_required(AnswerVoteView.as_view()), name='answervote'),
     path('question/<int:pk>/<int:id_answer>/unvote/', login_required(AnswerUnVoteView.as_view()), name='answerunvote'),
+    path('question/<int:pk>/<int:id_answer>/setcorrectanswer/',
+         login_required(AnswerSelectRightView.as_view()), name='setcorrectanswer'),
 ]
