@@ -12,23 +12,20 @@ def get_trends(context: dict):
     context['trends'] = trends
 
 
-def index(request):
-    context = {}
-    if request.user.is_authenticated:
-        profile = UserProfile.objects.filter(user=request.user)
-        context['photo'] = profile[0].photo
-    get_trends(context)
-    return render(request, 'questions/index.html', context)
-
-
 class IndexView(ListView):
     model = Questions
     template_name = 'questions/index.html'
-    paginate_by = 2
-    queryset = Questions.objects.annotate(count=Count('questionvotes')).order_by('-count')
+    paginate_by = 20
+    queryset = Questions.objects.annotate(
+        count_votes=Count('questionvotes', distinct=True),
+        count_answers=Count('answers', distinct=True)
+    ).order_by('-count_votes')
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
+        if self.request.user.is_authenticated:
+            profile = UserProfile.objects.get(user=self.request.user)
+            context['photo'] = profile.photo
         get_trends(context)
         return context
 
