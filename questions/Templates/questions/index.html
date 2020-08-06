@@ -3,6 +3,18 @@
 
 {% block leftbody %}
     <br>
+    <div class="row">
+      <div class="span4 offset6">
+           <ul class="nav nav-pills">
+              <li class="active">
+                <a href="#">Новыые вопросы</a>
+              </li>
+              <li>
+                  <a href="#">Популярные вопросы</a>
+              </li>
+          </ul>
+      </div>
+    </div>
     <table class="table">
       <tbody>
         {% for item in object_list %}
@@ -16,7 +28,7 @@
               <span class="badge badge-info">{{ item.count_answers }}</span>
           </td>
           <td>
-              <p>{{ item.title }}</p>
+              <p><a href="{% url 'questions:questionview' item.id %}">{{ item.title }}</a></p>
               {% for tag in item.tags.all %}
                   <span class="label label-inverse">{{ tag.name }}</span>
               {% endfor %}
