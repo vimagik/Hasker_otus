@@ -15,19 +15,35 @@ def get_trends(context: dict):
 class IndexView(ListView):
     model = Questions
     template_name = 'questions/index.html'
-    paginate_by = 20
-    queryset = Questions.objects.annotate(
-        count_votes=Count('questionvotes', distinct=True),
-        count_answers=Count('answers', distinct=True)
-    ).order_by('-count_votes')
+    paginate_by = 2
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         if self.request.user.is_authenticated:
             profile = UserProfile.objects.get(user=self.request.user)
             context['photo'] = profile.photo
+        if self.request.session.get('order') == 'date':
+            context['order_date'] = 'active'
+        else:
+            context['order_popular'] = 'active'
         get_trends(context)
         return context
+
+    def get_queryset(self):
+        if self.request.GET.get('order'):
+            self.request.session['order'] = self.request.GET['order']
+        elif self.request.session.get('order') is None:
+            self.request.session['order'] = 'popular'
+        if self.request.session.get('order') == 'date':
+            order = '-create_date'
+        elif self.request.session.get('order') == 'popular':
+            order = '-count_votes'
+        queryset = Questions.objects.annotate(
+            count_votes=Count('questionvotes', distinct=True),
+            count_answers=Count('answers', distinct=True)
+        ).order_by(order)
+        return queryset
+
 
 
 class CreateQuestionView(TemplateView):

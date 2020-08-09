@@ -6,11 +6,11 @@
     <div class="row">
       <div class="span4 offset6">
            <ul class="nav nav-pills">
-              <li class="active">
-                <a href="#">Новыые вопросы</a>
+              <li class="{{ order_date }}">
+                <a href="{% url 'questions:index' %}?order=date">Новые вопросы</a>
               </li>
-              <li>
-                  <a href="#">Популярные вопросы</a>
+              <li class="{{ order_popular }}">
+                  <a href="{% url 'questions:index' %}?order=popular">Популярные вопросы</a>
               </li>
           </ul>
       </div>
@@ -35,7 +35,7 @@
           </td>
           <td>
               <p>{{ item.author.username }}</p>
-              <p>Дата публикации: {{ item.create_date|date:"m.d.Y" }}</p>
+              <p>Дата публикации: {{ item.create_date|date:"d.m.Y" }}</p>
           </td>
 
         </tr>
