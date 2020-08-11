@@ -1,0 +1,103 @@
+{% extends 'base.html'%}
+{% block title %}Создание нового вопроса{% endblock %}
+
+{% block leftbody %}
+    <h2>{{ question.title }}</h2>
+    <br>
+    <div class="row-fluid">
+        <div class="span1">
+            <form action="{% url 'questions:questionvote' question.id %}">
+                <input type="hidden" name="page" value="{{ page_obj.number }}">
+                <button class="btn" type="submit" {{ disabled }}><i class="icon-chevron-up"></i></button>
+            </form>
+            <span class="badge badge-inverse">{{ number_question_votes }}</span>
+            <form action="{% url 'questions:questionunvote' question.id %}">
+                <input type="hidden" name="page" value="{{ page_obj.number }}">
+                <button class="btn" type="submit" {{ disabled }}><i class="icon-chevron-down"></i></button>
+            </form>
+        </div>
+
+        <div class="span11">
+            <p>{{ question.body }}</p>
+            {% for tag in question.tags.all %}
+            <span class="label label-inverse">{{ tag.name }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    <br><br>
+    <table class="table">
+          {% load getvalue %}
+          <tbody>
+          {% for value in object_list %}
+                <tr>
+                     <td>
+                         <form action="{% url 'questions:answervote' question.id value.id %}">
+                             <input type="hidden" name="page" value="{{ page_obj.number }}">
+                             <button class="btn" type="submit" {{ disabled }}><i class="icon-chevron-up" ></i></button>
+                         </form>
+                         <span class="badge badge-success">{{ value.count }}</span>
+                         <form action="{% url 'questions:answerunvote' question.id value.id %}">
+                             <input type="hidden" name="page" value="{{ page_obj.number }}">
+                             <button class="btn" type="submit" {{ disabled }}><i class="icon-chevron-down"></i></button>
+                         </form>
+                         <form action="{% url 'questions:setcorrectanswer' question.id value.id %}">
+                             <input type="hidden" name="page" value="{{ page_obj.number }}">
+                             <button class="btn" type="submit" {{ disabled_correct_answer }}>
+                                 {% if value.correct %}
+                                 <i class="icon-star">
+                                 {% else %}
+                                 <i class="icon-star-empty">
+                                 {% endif %}
+                                 </i>
+                             </button>
+                         </form>
+                    </td>
+
+                     <td>
+                         <p><strong>{{ value.create_date|date:"d.m.Y" }}</strong></p>
+                         <p>{{ value.body }}</p>
+                         <p><strong>{{ value.author.username }}</strong></p>
+                     </td>
+
+                </tr>
+          {%  endfor %}
+          </tbody>
+    </table>
+
+    {% if is_paginated %}
+        <div class="pagination pagination-centered">
+            <ul>
+                {% if page_obj.has_previous %}
+                    <li><a href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+                {% else %}
+                    <li class="disabled"><a>&laquo;</a></li>
+                {% endif %}
+
+                {% for i in paginator.page_range %}
+                    {% if page_obj.number == i %}
+                        <li class="active"><a>{{ i }}</a></li>
+                    {% else %}
+                        <li><a href="?page={{ i }}">{{ i }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                    <li><a href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
+                {% else %}
+                    <li class="disabled"><a>&raquo;</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    {% endif %}
+
+
+
+    {% if user.is_authenticated %}
+    <br><br>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input class="btn" type="submit" value="Отправить">
+    </form>
+    {% endif %}
+
+{% endblock %}

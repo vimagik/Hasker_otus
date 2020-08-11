@@ -1,8 +1,9 @@
-from django.shortcuts import render, HttpResponse, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Count
 from django.views.generic import TemplateView, DetailView, RedirectView, ListView
 from registration.models import UserProfile
 from questions.models import QuestionVotes, Questions, Tags, Answers, AnswerVotes
+from django.core.mail import send_mail
 
 from questions.forms import QuestionCreateForm, AnswerCreateForm
 
@@ -15,7 +16,7 @@ def get_trends(context: dict):
 class IndexView(ListView):
     model = Questions
     template_name = 'questions/index.html'
-    paginate_by = 2
+    paginate_by = 20
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -45,7 +46,6 @@ class IndexView(ListView):
         return queryset
 
 
-
 class CreateQuestionView(TemplateView):
     template_name = 'questions/newQuestion.html'
 
@@ -73,29 +73,29 @@ class CreateQuestionView(TemplateView):
         return render(request, self.template_name, {'form': form})
 
 
-class QuestionView(DetailView):
+class QuestionView(ListView):
+    model = Answers
+    template_name = 'questions/question_detail.html'
+    paginate_by = 2
 
-    model = Questions
+    def get_queryset(self):
+        self.question = get_object_or_404(Questions, pk=self.kwargs.get('pk'))
+        queryset = Answers.objects.filter(question=self.question).annotate(count=Count('answervotes')).order_by('-count', '-create_date')
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        number_question_votes = QuestionVotes.objects.filter(question=self.object).count()
+        number_question_votes = QuestionVotes.objects.filter(question=self.question).count()
         context['number_question_votes'] = number_question_votes
-        answers = Answers.objects.filter(question=self.object)
-        vote_answers = dict()
-        for answer in answers:
-            vote_answers[answer.id] = AnswerVotes.objects.filter(answer=answer).count()
+        context['question'] = self.question
         if self.request.user.is_authenticated:
-            if self.request.user != self.object.author:
+            if self.request.user != self.question.author:
                 context['disabled_correct_answer'] = 'disabled'
         else:
             context['disabled_correct_answer'] = 'disabled'
             context['disabled'] = 'disabled'
-        context['answers'] = answers
-        context['vote_answers'] = vote_answers
         form = AnswerCreateForm()
         context['form'] = form
-
         get_trends(context)
         return context
 
@@ -109,6 +109,13 @@ class QuestionView(DetailView):
                 correct=False,
             )
             new_answer.save()
+            send_mail(
+                subject='Получен ответ на ваш вопрос',
+                message=f'Ссылка на ваш вопрос ',
+                from_email='info@homework.ru',
+                recipient_list=[request.user.email],
+                fail_silently=True,
+            )
         return redirect(f'/question/{pk}')
 
 
@@ -122,7 +129,8 @@ class QuestionVoteView(RedirectView):
         )
         if created:
             new_vote.save()
-        self.url = f"/question/{pk}"
+        current_page = self.request.GET.get('page')
+        self.url = f"/question/{pk}/?page={current_page}"
         return super().get_redirect_url(*args, **kwargs)
 
 
@@ -136,7 +144,8 @@ class QuestionUnVoteView(RedirectView):
         ).first()
         if vote:
             vote.delete()
-        self.url = f"/question/{pk}"
+        current_page = self.request.GET.get('page')
+        self.url = f"/question/{pk}/?page={current_page}"
         return super().get_redirect_url(*args, **kwargs)
 
 
@@ -151,7 +160,8 @@ class AnswerVoteView(RedirectView):
         )
         if created:
             new_vote_answer.save()
-        self.url = f"/question/{pk}"
+        current_page = self.request.GET.get('page')
+        self.url = f"/question/{pk}/?page={current_page}"
         return super().get_redirect_url(*args, **kwargs)
 
 
@@ -166,7 +176,8 @@ class AnswerUnVoteView(RedirectView):
         ).first()
         if vote_answer:
             vote_answer.delete()
-        self.url = f"/question/{pk}"
+        current_page = self.request.GET.get('page')
+        self.url = f"/question/{pk}/?page={current_page}"
         return super().get_redirect_url(*args, **kwargs)
 
 
@@ -185,6 +196,6 @@ class AnswerSelectRightView(RedirectView):
         answer = Answers.objects.get(pk=id_answer)
         answer.correct = True
         answer.save()
-
-        self.url = f"/question/{pk}"
+        current_page = self.request.GET.get('page')
+        self.url = f"/question/{pk}/?page={current_page}"
         return super().get_redirect_url(*args, **kwargs)
