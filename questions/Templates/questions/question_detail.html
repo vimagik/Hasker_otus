@@ -20,7 +20,9 @@
         <div class="span11">
             <p>{{ question.body }}</p>
             {% for tag in question.tags.all %}
-            <span class="label label-inverse">{{ tag.name }}</span>
+                <a href="?page={{ page_obj.number }}&tag={{ tag.name }}">
+                    <span class="label label-inverse">{{ tag.name }}</span>
+                </a>
             {% endfor %}
         </div>
     </div>

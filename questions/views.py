@@ -16,7 +16,7 @@ def get_trends(context: dict):
 class IndexView(ListView):
     model = Questions
     template_name = 'questions/index.html'
-    paginate_by = 20
+    paginate_by = 2
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -27,6 +27,9 @@ class IndexView(ListView):
             context['order_date'] = 'active'
         else:
             context['order_popular'] = 'active'
+        tag = self.request.GET.get('tag')
+        if tag:
+            context['tag_value'] = f'tag:{tag}'
         get_trends(context)
         return context
 
@@ -96,6 +99,9 @@ class QuestionView(ListView):
             context['disabled'] = 'disabled'
         form = AnswerCreateForm()
         context['form'] = form
+        tag = self.request.GET.get('tag')
+        if tag:
+            context['tag_value'] = f'tag:{tag}'
         get_trends(context)
         return context
 
@@ -199,3 +205,36 @@ class AnswerSelectRightView(RedirectView):
         current_page = self.request.GET.get('page')
         self.url = f"/question/{pk}/?page={current_page}"
         return super().get_redirect_url(*args, **kwargs)
+
+
+class SearchQuestionView(ListView):
+    model = Questions
+    paginate_by = 2
+    template_name = 'questions/search_result.html'
+
+    def get_queryset(self):
+        search_string = self.request.GET.get('search')
+        if search_string[:4] == 'tag:':
+            queryset = Questions.objects.filter(tags__name__contains=search_string[4:]).annotate(
+                count_votes=Count('questionvotes', distinct=True),
+                count_answers=Count('answers', distinct=True)
+            ).order_by('-count_votes', '-create_date')
+        else:
+            queryset = Questions.objects.filter(title__contains=search_string).annotate(
+                count_votes=Count('questionvotes', distinct=True),
+                count_answers=Count('answers', distinct=True)
+            ).order_by('-count_votes', '-create_date')
+        return queryset
+
+    def post(self, request):
+        search_string = request.POST.get('search_string')
+        return redirect(f'/searchresult/?search={search_string}')
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        search = self.request.GET.get('search')
+        context['search'] = search
+        if self.request.user.is_authenticated:
+            profile = UserProfile.objects.get(user=self.request.user)
+            context['photo'] = profile.photo
+        return context

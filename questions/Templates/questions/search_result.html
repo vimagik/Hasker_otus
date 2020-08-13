@@ -1,20 +1,9 @@
 {% extends 'base.html'%}
-{% block title %}Приветсвую вас на проекте HASKER{% endblock %}
+{% block title %}Результаты поиска{% endblock %}
 
 {% block leftbody %}
     <br>
-    <div class="row">
-      <div class="span4 offset6">
-           <ul class="nav nav-pills">
-              <li class="{{ order_date }}">
-                <a href="{% url 'questions:index' %}?order=date">Новые вопросы</a>
-              </li>
-              <li class="{{ order_popular }}">
-                  <a href="{% url 'questions:index' %}?order=popular">Популярные вопросы</a>
-              </li>
-          </ul>
-      </div>
-    </div>
+    <h3>Результаты поиска</h3>
     <table class="table">
       <tbody>
         {% for item in object_list %}
@@ -30,9 +19,7 @@
           <td>
               <p><a href="{% url 'questions:questionview' item.id %}">{{ item.title }}</a></p>
               {% for tag in item.tags.all %}
-                  <a href="?page={{ page_obj.number }}&tag={{ tag.name }}">
-                      <span class="label label-inverse">{{ tag.name }}</span>
-                  </a>
+                 <span class="label label-inverse">{{ tag.name }}</span>
               {% endfor %}
           </td>
           <td>
@@ -49,7 +36,7 @@
         <div class="pagination pagination-centered">
             <ul>
                 {% if page_obj.has_previous %}
-                    <li><a href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+                    <li><a href="?search={{ search }}&page={{ page_obj.previous_page_number }}">&laquo;</a></li>
                 {% else %}
                     <li class="disabled"><a>&laquo;</a></li>
                 {% endif %}
@@ -58,11 +45,11 @@
                     {% if page_obj.number == i %}
                         <li class="active"><a>{{ i }}</a></li>
                     {% else %}
-                        <li><a href="?page={{ i }}">{{ i }}</a></li>
+                        <li><a href="?search={{ search }}&page={{ i }}">{{ i }}</a></li>
                     {% endif %}
                 {% endfor %}
                 {% if page_obj.has_next %}
-                    <li><a href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
+                    <li><a href="?search={{ search }}&page={{ page_obj.next_page_number }}">&raquo;</a></li>
                 {% else %}
                     <li class="disabled"><a>&raquo;</a></li>
                 {% endif %}
