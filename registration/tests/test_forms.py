@@ -1,8 +1,6 @@
-from PIL import Image
+import base64
 from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
-from io import BytesIO
-import base64
 
 from registration.forms import UserForm, UserProfileForm
 
@@ -44,7 +42,7 @@ class UserFormTest(TestCase):
         form = UserForm(data=form_data, files={'photo': photo})
         self.assertTrue(form.is_valid())
 
-    def test_user_form_un_valid(self):
+    def test_user_form_password_error(self):
         photo = SimpleUploadedFile(
             content=(base64.b64decode(TEST_IMAGE)),
             name='tempfile.png',
