@@ -65,29 +65,18 @@ class EditProfileView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['form'] = UserProfileForm()
-        get_trends(context)
-        return context
-
-    def collect_data(self, request):
         data = {}
         photo_url = None
-        if request.user.is_authenticated:
-            data['login'] = request.user.username
-            data['email'] = request.user.email
-            profile = UserProfile.objects.filter(user=request.user)
+        if self.request.user.is_authenticated:
+            data['login'] = self.request.user.username
+            data['email'] = self.request.user.email
+            profile = UserProfile.objects.filter(user=self.request.user)
             if profile is not None:
                 photo_url = profile[0].photo.url
-        context = {
-            'form': UserProfileForm(initial=data),
-            'photo_url': photo_url,
-        }
+        context['form'] = UserProfileForm(initial=data)
+        context['photo_url'] = photo_url
         get_trends(context)
         return context
-
-    def get(self, request, *args, **kwargs):
-        context = self.collect_data(request)
-        return render(request, self.template_name, context)
 
     def post(self, request):
         form = UserProfileForm(request.POST, request.FILES)
@@ -104,7 +93,7 @@ class EditProfileView(TemplateView):
                 profile.photo = photo
                 profile.save()
                 renewal = True
-        context = self.collect_data(request)
+        context = self.get_context_data()
         if renewal:
             context['success'] = "Профиль обновлен"
         else:

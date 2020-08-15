@@ -16,7 +16,7 @@ def get_trends(context: dict):
 class IndexView(ListView):
     model = Questions
     template_name = 'questions/index.html'
-    paginate_by = 2
+    paginate_by = 20
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -79,7 +79,7 @@ class CreateQuestionView(TemplateView):
 class QuestionView(ListView):
     model = Answers
     template_name = 'questions/question_detail.html'
-    paginate_by = 2
+    paginate_by = 20
 
     def get_queryset(self):
         self.question = get_object_or_404(Questions, pk=self.kwargs.get('pk'))
@@ -209,7 +209,7 @@ class AnswerSelectRightView(RedirectView):
 
 class SearchQuestionView(ListView):
     model = Questions
-    paginate_by = 2
+    paginate_by = 20
     template_name = 'questions/search_result.html'
 
     def get_queryset(self):
