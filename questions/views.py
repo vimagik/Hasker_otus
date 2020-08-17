@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Count
-from django.views.generic import TemplateView, DetailView, RedirectView, ListView
+from django.views.generic import TemplateView, RedirectView, ListView
 from registration.models import UserProfile
 from questions.models import QuestionVotes, Questions, Tags, Answers, AnswerVotes
 from django.core.mail import send_mail
@@ -9,11 +9,15 @@ from questions.forms import QuestionCreateForm, AnswerCreateForm
 
 
 def get_trends(context: dict):
+    """Функция по получению 20 самый популярных вопросов"""
     trends = Questions.objects.annotate(count=Count('questionvotes')).order_by('-count')[:20]
     context['trends'] = trends
 
 
 class IndexView(ListView):
+    """
+    Главная страница проекта
+    """
     model = Questions
     template_name = 'questions/index.html'
     paginate_by = 20
@@ -50,11 +54,17 @@ class IndexView(ListView):
 
 
 class CreateQuestionView(TemplateView):
+    """
+    Страница по созданию нового вопроса
+    """
     template_name = 'questions/newQuestion.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = QuestionCreateForm()
+        if self.request.user.is_authenticated:
+            profile = UserProfile.objects.get(user=self.request.user)
+            context['photo'] = profile.photo
         get_trends(context)
         return context
 
@@ -77,9 +87,12 @@ class CreateQuestionView(TemplateView):
 
 
 class QuestionView(ListView):
+    """
+    Просмотр вопроса с возможностью, для авторизированных пользователей, написать свой ответ
+    """
     model = Answers
     template_name = 'questions/question_detail.html'
-    paginate_by = 20
+    paginate_by = 30
 
     def get_queryset(self):
         self.question = get_object_or_404(Questions, pk=self.kwargs.get('pk'))
@@ -92,6 +105,8 @@ class QuestionView(ListView):
         context['number_question_votes'] = number_question_votes
         context['question'] = self.question
         if self.request.user.is_authenticated:
+            profile = UserProfile.objects.get(user=self.request.user)
+            context['photo'] = profile.photo
             if self.request.user != self.question.author:
                 context['disabled_correct_answer'] = 'disabled'
         else:
@@ -115,9 +130,10 @@ class QuestionView(ListView):
                 correct=False,
             )
             new_answer.save()
+            question_link = request._current_scheme_host + request.path
             send_mail(
                 subject='Получен ответ на ваш вопрос',
-                message=f'Ссылка на ваш вопрос ',
+                message=f'Ссылка на ваш вопрос {question_link}',
                 from_email='info@homework.ru',
                 recipient_list=[request.user.email],
                 fail_silently=True,
@@ -126,6 +142,9 @@ class QuestionView(ListView):
 
 
 class QuestionVoteView(RedirectView):
+    """
+    Голосование за понравившийся вопрос с редиректом обратно на страницу вопроса
+    """
 
     def get_redirect_url(self, *args, **kwargs):
         pk = kwargs['pk']
@@ -141,6 +160,9 @@ class QuestionVoteView(RedirectView):
 
 
 class QuestionUnVoteView(RedirectView):
+    """
+    Отзыв своего голоса с редиректом обратно на страницу вопроса
+    """
 
     def get_redirect_url(self, *args, **kwargs):
         pk = kwargs['pk']
@@ -156,6 +178,10 @@ class QuestionUnVoteView(RedirectView):
 
 
 class AnswerVoteView(RedirectView):
+    """
+    Голосование за понравившийся ответ с редиректом обратно на страницу вопроса
+    и соответствующую страницу с ответом
+    """
 
     def get_redirect_url(self, *args, **kwargs):
         pk = kwargs['pk']
@@ -172,6 +198,10 @@ class AnswerVoteView(RedirectView):
 
 
 class AnswerUnVoteView(RedirectView):
+    """
+    Отзыв своего голоса на понравившийся ранее ответ с редиректом обратно
+    на страницу вопроса и соответствующую страницу с ответом
+    """
 
     def get_redirect_url(self, *args, **kwargs):
         pk = kwargs['pk']
@@ -188,6 +218,9 @@ class AnswerUnVoteView(RedirectView):
 
 
 class AnswerSelectRightView(RedirectView):
+    """
+    Возможность выбрать верный ответ для автора вопроса
+    """
 
     def get_redirect_url(self, *args, **kwargs):
         pk = kwargs['pk']
@@ -208,6 +241,9 @@ class AnswerSelectRightView(RedirectView):
 
 
 class SearchQuestionView(ListView):
+    """
+    Быстый поиск вопросов по теме и по тегам с пагинацией результата
+    """
     model = Questions
     paginate_by = 20
     template_name = 'questions/search_result.html'

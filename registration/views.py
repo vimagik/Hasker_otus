@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.views.generic import TemplateView
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.contrib import auth
 from django.contrib.auth.views import LogoutView
 from django.contrib.auth.models import User
@@ -11,6 +11,9 @@ from questions.views import get_trends
 
 
 class Login(TemplateView):
+    """
+    Страница с возможностью авторизоваться на сайте
+    """
     template_name = 'registration/login.html'
 
     def get_context_data(self, **kwargs):
@@ -30,10 +33,14 @@ class Login(TemplateView):
 
 
 class Logout(LogoutView):
+    """Стандартный Logout из коробки с переходом на index"""
     next_page = '/'
 
 
 class CreateUserView(TemplateView):
+    """
+    Страница по регистрации на сайте
+    """
     template_name = 'registration/createUser.html'
 
     def get_context_data(self, **kwargs):
@@ -61,6 +68,7 @@ class CreateUserView(TemplateView):
 
 
 class EditProfileView(TemplateView):
+    """Страница по посмотру и редактированию профиля пользователя"""
     template_name = 'registration/editProfile.html'
 
     def get_context_data(self, **kwargs):

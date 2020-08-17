@@ -163,7 +163,6 @@ class EditProfileViewTest(TestCase):
         self.assertTemplateUsed(resp, 'registration/editProfile.html')
 
 
-
 TEST_IMAGE = '''
 iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBI
 WXMAAABIAAAASABGyWs+AAAACXZwQWcAAAAQAAAAEABcxq3DAAABfElEQVQ4y52TvUuCURTGf5Zg
