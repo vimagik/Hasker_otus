@@ -98,7 +98,7 @@ class CreateQuestionViewTest(TestCase):
         resp = self.client.get(reverse('questions:createquestion'))
         self.assertEqual(str(resp.context['user']), 'test_user')
         self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed('questions/newQuestion.html')
+        self.assertTemplateUsed('questions/new_question.html')
 
 
 class QuestionViewTest(TestCase):

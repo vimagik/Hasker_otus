@@ -57,7 +57,7 @@ class CreateQuestionView(TemplateView):
     """
     Страница по созданию нового вопроса
     """
-    template_name = 'questions/newQuestion.html'
+    template_name = 'questions/new_question.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
