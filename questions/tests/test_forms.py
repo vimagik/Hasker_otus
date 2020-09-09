@@ -1,6 +1,14 @@
+import factory
 from django.test import TestCase
 
 from questions.forms import QuestionCreateForm, AnswerCreateForm
+
+
+class QuestionCreateFormFactory(factory.Factory):
+    class Meta:
+        model = QuestionCreateForm
+
+    tags = factory.Faker('')
 
 
 class QuestionCreateFormTest(TestCase):

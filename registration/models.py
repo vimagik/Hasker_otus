@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 
 
 class UserProfile(models.Model):
+    """Профиль пользователя"""
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     photo = models.ImageField(upload_to='users/%Y/%m/%d', blank=True)
 

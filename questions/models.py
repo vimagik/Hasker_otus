@@ -1,8 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import Count
 
 
 class Tags(models.Model):
+    """Модель для хранения тегов"""
 
     class Meta:
         verbose_name = 'Tag'
@@ -15,6 +17,7 @@ class Tags(models.Model):
 
 
 class Questions(models.Model):
+    """Модель для хранения вопросов"""
 
     class Meta:
         verbose_name = 'Question'
@@ -32,8 +35,15 @@ class Questions(models.Model):
     def __str__(self):
         return f'{self.title} {self.author.username}'
 
+    @staticmethod
+    def get_trends():
+        return Questions.objects.annotate(count=Count('questionvotes')).order_by('-count')[:20]
+
+
 
 class QuestionVotes(models.Model):
+    """Модель для хранения голосов по вопросам"""
+
     class Meta:
         verbose_name = 'Question vote'
         verbose_name_plural = 'Question votes'
@@ -53,6 +63,7 @@ class QuestionVotes(models.Model):
 
 
 class Answers(models.Model):
+    """Модель для хранения ответов к вопросам"""
 
     class Meta:
         verbose_name = 'Answer'
@@ -75,6 +86,7 @@ class Answers(models.Model):
 
 
 class AnswerVotes(models.Model):
+    """Модель для хранения голосов по ответам"""
     class Meta:
         verbose_name = 'Answer vote'
         verbose_name_plural = 'Answer votes'

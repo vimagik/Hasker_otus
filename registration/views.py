@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 
 from registration.forms import UserForm, UserProfileForm
 from registration.models import UserProfile
-from questions.views import get_trends
+from questions.models import Questions
 
 
 class Login(TemplateView):
@@ -18,7 +18,7 @@ class Login(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        get_trends(context)
+        context['trends'] = Questions.get_trends()
         return context
 
     def post(self, request):
@@ -46,7 +46,7 @@ class CreateUserView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = UserForm()
-        get_trends(context)
+        context['trends'] = Questions.get_trends()
         return context
 
     def post(self, request):
@@ -83,7 +83,7 @@ class EditProfileView(TemplateView):
                 photo_url = profile[0].photo.url
         context['form'] = UserProfileForm(initial=data)
         context['photo_url'] = photo_url
-        get_trends(context)
+        context['trends'] = Questions.get_trends()
         return context
 
     def post(self, request):

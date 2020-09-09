@@ -1,17 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Count
+from django.db import transaction
 from django.views.generic import TemplateView, RedirectView, ListView
-from registration.models import UserProfile
-from questions.models import QuestionVotes, Questions, Tags, Answers, AnswerVotes
 from django.core.mail import send_mail
+from django.urls import reverse
 
+from questions.models import QuestionVotes, Questions, Tags, Answers, AnswerVotes
 from questions.forms import QuestionCreateForm, AnswerCreateForm
-
-
-def get_trends(context: dict):
-    """Функция по получению 20 самый популярных вопросов"""
-    trends = Questions.objects.annotate(count=Count('questionvotes')).order_by('-count')[:20]
-    context['trends'] = trends
+from registration.models import UserProfile
 
 
 class IndexView(ListView):
@@ -34,7 +30,7 @@ class IndexView(ListView):
         tag = self.request.GET.get('tag')
         if tag:
             context['tag_value'] = f'tag:{tag}'
-        get_trends(context)
+        context['trends'] = Questions.get_trends()
         return context
 
     def get_queryset(self):
@@ -46,11 +42,11 @@ class IndexView(ListView):
             order = '-create_date'
         elif self.request.session.get('order') == 'popular':
             order = '-count_votes'
-        queryset = Questions.objects.annotate(
+        return Questions.objects.annotate(
             count_votes=Count('questionvotes', distinct=True),
             count_answers=Count('answers', distinct=True)
         ).order_by(order)
-        return queryset
+
 
 
 class CreateQuestionView(TemplateView):
@@ -65,7 +61,7 @@ class CreateQuestionView(TemplateView):
         if self.request.user.is_authenticated:
             profile = UserProfile.objects.get(user=self.request.user)
             context['photo'] = profile.photo
-        get_trends(context)
+        context['trends'] = Questions.get_trends()
         return context
 
     def post(self, request):
@@ -117,7 +113,7 @@ class QuestionView(ListView):
         tag = self.request.GET.get('tag')
         if tag:
             context['tag_value'] = f'tag:{tag}'
-        get_trends(context)
+        context['trends'] = Questions.get_trends()
         return context
 
     def post(self, request, pk):
@@ -155,7 +151,7 @@ class QuestionVoteView(RedirectView):
         if created:
             new_vote.save()
         current_page = self.request.GET.get('page')
-        self.url = f"/question/{pk}/?page={current_page}"
+        self.url = reverse('questions:questionview', args=[pk]) + f'?page={current_page}'
         return super().get_redirect_url(*args, **kwargs)
 
 
@@ -166,14 +162,15 @@ class QuestionUnVoteView(RedirectView):
 
     def get_redirect_url(self, *args, **kwargs):
         pk = kwargs['pk']
-        vote = QuestionVotes.objects.filter(
-            author=self.request.user,
-            question_id=pk
-        ).first()
-        if vote:
-            vote.delete()
+        with transaction.atomic():
+            vote = QuestionVotes.objects.filter(
+                author=self.request.user,
+                question_id=pk
+            ).first()
+            if vote:
+                vote.delete()
         current_page = self.request.GET.get('page')
-        self.url = f"/question/{pk}/?page={current_page}"
+        self.url = reverse('questions:questionview', args=[pk]) + f'?page={current_page}'
         return super().get_redirect_url(*args, **kwargs)
 
 
@@ -193,7 +190,7 @@ class AnswerVoteView(RedirectView):
         if created:
             new_vote_answer.save()
         current_page = self.request.GET.get('page')
-        self.url = f"/question/{pk}/?page={current_page}"
+        self.url = reverse('questions:questionview', args=[pk]) + f'?page={current_page}'
         return super().get_redirect_url(*args, **kwargs)
 
 
@@ -206,14 +203,15 @@ class AnswerUnVoteView(RedirectView):
     def get_redirect_url(self, *args, **kwargs):
         pk = kwargs['pk']
         id_answer = kwargs['id_answer']
-        vote_answer = AnswerVotes.objects.filter(
-            author=self.request.user,
-            answer_id=id_answer
-        ).first()
-        if vote_answer:
-            vote_answer.delete()
+        with transaction.atomic():
+            vote_answer = AnswerVotes.objects.filter(
+                author=self.request.user,
+                answer_id=id_answer
+            ).first()
+            if vote_answer:
+                vote_answer.delete()
         current_page = self.request.GET.get('page')
-        self.url = f"/question/{pk}/?page={current_page}"
+        self.url = reverse('questions:questionview', args=[pk]) + f'?page={current_page}'
         return super().get_redirect_url(*args, **kwargs)
 
 
@@ -228,15 +226,16 @@ class AnswerSelectRightView(RedirectView):
         if self.request.user != current_question.author:
             return super().get_redirect_url(*args, **kwargs)
         id_answer = kwargs['id_answer']
-        old_correct_answer = Answers.objects.filter(correct=True).first()
-        if old_correct_answer:
-            old_correct_answer.correct = False
-            old_correct_answer.save()
-        answer = Answers.objects.get(pk=id_answer)
-        answer.correct = True
-        answer.save()
+        with transaction.atomic():
+            old_correct_answer = Answers.objects.filter(correct=True).first()
+            if old_correct_answer:
+                old_correct_answer.correct = False
+                old_correct_answer.save()
+            answer = Answers.objects.get(pk=id_answer)
+            answer.correct = True
+            answer.save()
         current_page = self.request.GET.get('page')
-        self.url = f"/question/{pk}/?page={current_page}"
+        self.url = reverse('questions:questionview', args=[pk]) + f'?page={current_page}'
         return super().get_redirect_url(*args, **kwargs)
 
 
@@ -270,6 +269,7 @@ class SearchQuestionView(ListView):
         context = super().get_context_data(*args, **kwargs)
         search = self.request.GET.get('search')
         context['search'] = search
+        context['trends'] = Questions.get_trends()
         if self.request.user.is_authenticated:
             profile = UserProfile.objects.get(user=self.request.user)
             context['photo'] = profile.photo
