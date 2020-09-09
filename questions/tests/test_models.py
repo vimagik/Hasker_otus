@@ -184,7 +184,3 @@ class AnswerVotesModelTest(TestCase):
     def test_answer_votes_str(self):
         vote = AnswerVotes.objects.get(id=1)
         self.assertEqual(str(vote), 'Answer votes by Test_user')
-
-
-
-
