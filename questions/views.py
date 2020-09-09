@@ -211,7 +211,7 @@ class AnswerUnVoteView(RedirectView):
             if vote_answer:
                 vote_answer.delete()
         current_page = self.request.GET.get('page')
-        self.url = reverse('questions:questionview', args=[pk]) + f'?page={current_page}'
+        self.url = f"{reverse('questions:questionview', args=[pk])}?page={current_page}"
         return super().get_redirect_url(*args, **kwargs)
 
 
@@ -235,7 +235,7 @@ class AnswerSelectRightView(RedirectView):
             answer.correct = True
             answer.save()
         current_page = self.request.GET.get('page')
-        self.url = reverse('questions:questionview', args=[pk]) + f'?page={current_page}'
+        self.url = f"{reverse('questions:questionview', args=[pk])}?page={current_page}"
         return super().get_redirect_url(*args, **kwargs)
 
 

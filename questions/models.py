@@ -40,7 +40,6 @@ class Questions(models.Model):
         return Questions.objects.annotate(count=Count('questionvotes')).order_by('-count')[:20]
 
 
-
 class QuestionVotes(models.Model):
     """Модель для хранения голосов по вопросам"""
 

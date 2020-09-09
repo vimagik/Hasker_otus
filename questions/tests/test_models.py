@@ -1,22 +1,55 @@
+import factory
 from django.test import TestCase
 from django.contrib.auth.models import User
 
 from questions.models import Tags, Questions, QuestionVotes, Answers, AnswerVotes
 
 
+class TagFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Tags
+
+
+class UserFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = User
+
+
+class QuestionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Questions
+
+
+class QuestionVoteFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = QuestionVotes
+
+
+class AnswersFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Answers
+
+    correct = True
+
+
+class AnswerVotesFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AnswerVotes
+
+
 class TagsModelTest(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        Tags.objects.create(name='Python')
+        TagFactory(name='Python')
 
     def test_tag_label(self):
-        tag = Tags.objects.get(id=1)
+        tag = Tags.objects.get(name='Python')
         field_label = tag._meta.get_field('name').verbose_name
         self.assertEqual(field_label, 'name')
 
     def test_tag_str(self):
-        tag = Tags.objects.get(id=1)
+        tag = Tags.objects.get(name='Python')
         str_tag = str(tag)
         self.assertEqual('Python', str_tag)
 
@@ -25,44 +58,36 @@ class QuestionsModelTest(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        tag = Tags.objects.create(name='Python')
-        user = User.objects.create(
-            username='Test_user'
-        )
-        question = Questions.objects.create(
-            title='Test_name',
-            body='Test body',
-            author=user,
-        )
-        question.tags.add(tag)
+        user = UserFactory(username='Test_user')
+        QuestionFactory(title='Test_name', author=user)
 
     def test_question_title_label(self):
-        question = Questions.objects.get(id=1)
+        question = Questions.objects.get(title='Test_name')
         title_label = question._meta.get_field('title').verbose_name
         self.assertEqual(title_label, 'Заголовок')
 
     def test_question_body_label(self):
-        question = Questions.objects.get(id=1)
+        question = Questions.objects.get(title='Test_name')
         title_body = question._meta.get_field('body').verbose_name
         self.assertEqual(title_body, 'Текст вопроса')
 
     def test_question_author_label(self):
-        question = Questions.objects.get(id=1)
+        question = Questions.objects.get(title='Test_name')
         author_label = question._meta.get_field('author').verbose_name
         self.assertEqual(author_label, 'author')
 
     def test_question_create_day_label(self):
-        question = Questions.objects.get(id=1)
+        question = Questions.objects.get(title='Test_name')
         date_label = question._meta.get_field('create_date').verbose_name
         self.assertEqual(date_label, 'create date')
 
     def test_question_tags_label(self):
-        question = Questions.objects.get(id=1)
+        question = Questions.objects.get(title='Test_name')
         tags_label = question._meta.get_field('tags').verbose_name
         self.assertEqual(tags_label, 'tags')
 
     def test_question_str(self):
-        question = Questions.objects.get(id=1)
+        question = Questions.objects.get(title='Test_name')
         self.assertEqual(str(question), 'Test_name Test_user')
 
 
@@ -70,20 +95,9 @@ class QuestionVotesModelTest(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        tag = Tags.objects.create(name='Python')
-        user = User.objects.create(
-            username='Test_user'
-        )
-        question = Questions.objects.create(
-            title='Test_name',
-            body='Test body',
-            author=user,
-        )
-        question.tags.add(tag)
-        QuestionVotes.objects.create(
-            author=user,
-            question=question,
-        )
+        user = UserFactory(username='Test_user')
+        question = QuestionFactory(author=user)
+        QuestionVoteFactory(author=user, question=question)
 
     def test_question_votes_author_label(self):
         vote = QuestionVotes.objects.get(id=1)
@@ -109,22 +123,9 @@ class AnswerModelTest(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        tag = Tags.objects.create(name='Python')
-        user = User.objects.create(
-            username='Test_user'
-        )
-        question = Questions.objects.create(
-            title='Test_name',
-            body='Test body',
-            author=user,
-        )
-        question.tags.add(tag)
-        Answers.objects.create(
-            body='testtesttest',
-            author=user,
-            correct=False,
-            question=question,
-        )
+        user = UserFactory(username='Test_user')
+        question = QuestionFactory(author=user)
+        AnswersFactory(author=user, question=question)
 
     def test_answer_body_label(self):
         answer = Answers.objects.get(id=1)
@@ -160,26 +161,10 @@ class AnswerVotesModelTest(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        tag = Tags.objects.create(name='Python')
-        user = User.objects.create(
-            username='Test_user'
-        )
-        question = Questions.objects.create(
-            title='Test_name',
-            body='Test body',
-            author=user,
-        )
-        question.tags.add(tag)
-        answer = Answers.objects.create(
-            body='testtesttest',
-            author=user,
-            correct=False,
-            question=question,
-        )
-        AnswerVotes.objects.create(
-            author=user,
-            answer=answer,
-        )
+        user = UserFactory(username='Test_user')
+        question = QuestionFactory(author=user)
+        answer = AnswersFactory(author=user, question=question)
+        AnswerVotesFactory(author=user, answer=answer)
 
     def test_answer_votes_author_label(self):
         vote = AnswerVotes.objects.get(id=1)
