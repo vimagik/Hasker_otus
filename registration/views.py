@@ -1,8 +1,9 @@
 from django.shortcuts import render
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, FormView, CreateView
 from django.http import HttpResponseRedirect
 from django.contrib import auth
-from django.contrib.auth.views import LogoutView
+from django.contrib.auth.views import LogoutView, LoginView
+from django.urls import reverse
 from django.contrib.auth.models import User
 
 from registration.forms import UserForm, UserProfileForm
@@ -10,7 +11,7 @@ from registration.models import UserProfile
 from questions.models import Questions
 
 
-class Login(TemplateView):
+class Login(LoginView):
     """
     Страница с возможностью авторизоваться на сайте
     """
@@ -21,55 +22,39 @@ class Login(TemplateView):
         context['trends'] = Questions.get_trends()
         return context
 
-    def post(self, request):
-        username = request.POST['username']
-        password = request.POST['password']
-        user = auth.authenticate(username=username, password=password)
-        if user is not None and user.is_active:
-            auth.login(request, user)
-            return HttpResponseRedirect("/")
-        else:
-            return render(request, self.template_name, {'error': 'Не найдена пара логин-пароль'})
-
 
 class Logout(LogoutView):
     """Стандартный Logout из коробки с переходом на index"""
     next_page = '/'
 
 
-class CreateUserView(TemplateView):
+class CreateUserView(CreateView):
     """
     Страница по регистрации на сайте
     """
-    template_name = 'registration/createUser.html'
+    form_class = UserForm
+    template_name = 'registration/create_user.html'
+    success_url = '/'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['form'] = UserForm()
         context['trends'] = Questions.get_trends()
         return context
 
-    def post(self, request):
-        form = UserForm(request.POST, request.FILES)
-        if form.is_valid():
-            new_user = User(
-                username=form.cleaned_data['login'],
-                email=form.cleaned_data['email'],
-            )
-            new_user.set_password(form.cleaned_data['password1'])
-            new_user.save()
-            new_user_profile = UserProfile(
-                photo=form.cleaned_data['photo'],
-                user=new_user,
-            )
-            new_user_profile.save()
-            return HttpResponseRedirect('/')
-        return render(request, self.template_name, {'form': form})
+    def form_valid(self, form):
+        self.object = form.save()
+        profile = UserProfile.objects.create(
+            user=self.object,
+            photo=form.cleaned_data['photo']
+        )
+        profile.save()
+        return super().form_valid(form)
 
 
-class EditProfileView(TemplateView):
+class EditProfileView(FormView):
     """Страница по посмотру и редактированию профиля пользователя"""
-    template_name = 'registration/editProfile.html'
+    template_name = 'registration/edit_profile.html'
+    form_class = UserProfileForm
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -86,24 +71,22 @@ class EditProfileView(TemplateView):
         context['trends'] = Questions.get_trends()
         return context
 
-    def post(self, request):
-        form = UserProfileForm(request.POST, request.FILES)
+    def form_valid(self, form):
         renewal = False
-        if form.is_valid():
-            email = form.cleaned_data['email']
-            if email != request.user.email:
-                request.user.email = email
-                request.user.save()
-                renewal = True
-            photo = form.cleaned_data['photo']
-            if photo:
-                profile = UserProfile.objects.get(user=request.user)
-                profile.photo = photo
-                profile.save()
-                renewal = True
+        email = form.cleaned_data['email']
+        if email != self.request.user.email:
+            self.request.user.email = email
+            self.request.user.save()
+            renewal = True
+        photo = form.cleaned_data['photo']
+        if photo:
+            profile = UserProfile.objects.get(user=self.request.user)
+            profile.photo = photo
+            profile.save()
+            renewal = True
         context = self.get_context_data()
         if renewal:
             context['success'] = "Профиль обновлен"
         else:
             context['important'] = "Нет данных для обновления"
-        return render(request, self.template_name, context)
+        return render(self.request, self.template_name, context)

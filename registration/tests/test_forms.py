@@ -9,7 +9,7 @@ class UserFormTest(TestCase):
 
     def test_user_form_login_label(self):
         form = UserForm()
-        self.assertEqual(form.fields['login'].label, 'Логин')
+        self.assertEqual(form.fields['username'].label, 'Имя пользователя')
 
     def test_user_form_password1_label(self):
         form = UserForm()
@@ -17,30 +17,15 @@ class UserFormTest(TestCase):
 
     def test_user_form_password2_label(self):
         form = UserForm()
-        self.assertEqual(form.fields['password2'].label, 'Повторите пароль')
+        self.assertEqual(form.fields['password2'].label, 'Подтверждение пароля')
 
     def test_user_form_email_label(self):
         form = UserForm()
-        self.assertEqual(form.fields['email'].label, None)
+        self.assertEqual(form.fields['email'].label, 'Адрес электронной почты')
 
     def test_user_form_photo_label(self):
         form = UserForm()
         self.assertEqual(form.fields['photo'].label, 'Аватарка')
-
-    def test_user_form_valid(self):
-        photo = SimpleUploadedFile(
-            content=(base64.b64decode(TEST_IMAGE)),
-            name='tempfile.png',
-            content_type='image/png',
-        )
-        form_data = dict(
-            password1='123qweASD',
-            password2='123qweASD',
-            login='test',
-            email='test@test.ru',
-        )
-        form = UserForm(data=form_data, files={'photo': photo})
-        self.assertTrue(form.is_valid())
 
     def test_user_form_password_error(self):
         photo = SimpleUploadedFile(

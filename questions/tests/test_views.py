@@ -208,7 +208,8 @@ class QuestionVoteViewTest(TestCase):
             password='test',
         )
         self.client.get(reverse('questions:questionvote', kwargs={'pk': 1}) + '?page=1')
-        self.assertEqual(QuestionVotes.objects.all().count(), 1)
+        votes = QuestionVotes.objects.filter(question_id=1).count()
+        self.assertEqual(votes, 1)
 
 
 class QuestionUnVoteViewTest(TestCase):

@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from registration.models import UserProfile
+from registration.forms import UserForm
 
 
 class LoginViewTest(TestCase):
@@ -51,18 +52,6 @@ class LoginViewTest(TestCase):
             expected_url=reverse('questions:index'),
         )
 
-    def test_login_view_invalid_password(self):
-        resp = self.client.post(
-            path=reverse('registration:login'),
-            data=dict(
-                username='test_user',
-                password='invalid'
-            ),
-        )
-        self.assertEqual(resp.status_code, 200)
-        self.assertTrue('error' in resp.context)
-        self.assertEqual(resp.context['error'], 'Не найдена пара логин-пароль')
-
 
 class LogoutViewTest(TestCase):
 
@@ -92,27 +81,7 @@ class CreateUserViewTest(TestCase):
     def test_create_user_view_correct_template(self):
         resp = self.client.get(reverse('registration:registration'))
         self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, 'registration/createUser.html')
-
-    def test_create_user_valid_form(self):
-        photo = SimpleUploadedFile(
-            content=(base64.b64decode(TEST_IMAGE)),
-            name='tempfile.png',
-            content_type='image/png',
-        )
-        resp = self.client.post(
-            path=reverse('registration:registration'),
-            data=dict(
-                login='test',
-                password1='123qweASD',
-                password2='123qweASD',
-                email='test@test.ru',
-                photo=photo,
-            )
-        )
-        self.assertEqual(resp.status_code, 302)
-        self.assertRedirects(resp, reverse('questions:index'))
-        self.assertEqual(User.objects.get(id=1).username, 'test')
+        self.assertTemplateUsed(resp, 'registration/create_user.html')
 
 
 class EditProfileViewTest(TestCase):
@@ -160,7 +129,7 @@ class EditProfileViewTest(TestCase):
         )
         resp = self.client.get(reverse('registration:editprofile'))
         self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, 'registration/editProfile.html')
+        self.assertTemplateUsed(resp, 'registration/edit_profile.html')
 
 
 TEST_IMAGE = '''

@@ -2,25 +2,33 @@
 {% block title %}Приветсвую вас на проекте HASKER{% endblock %}
 
 {% block leftbody %}
-    <form class="form-horizontal" action='.' method='post'>
-    {% csrf_token %}
-        <fieldset>
-            <div class="control-group">
-                <label class="control-label" for="username">Логин</label>
-                  <div class="controls">
-                      <input type="text" class="input-xlarge" name="username" value="" id="username">
-                      <p class="help-block red">{{ error }}</p>
-                  </div>
+    {% if form.errors %}
+        <p>Указанная пара логин и пароль не найдена. Попробуйте еще раз</p>
+    {% endif %}
 
-                <br>
-                <label class="control-label" for="password">Пароль</label>
-                  <div class="controls">
-                    <input type="password" class="input-xlarge" name="password" value="" id="password">
-                  </div>
-                <br>
-                <input type="submit" value="Войти" class="btn controls"/>
-                <input type="hidden" name="next" value="{% url 'questions:index' %}" />
-            </div>
-        </fieldset>
+    {% if next %}
+        {% if user.is_authenticated %}
+        <p>У вас нет доступа к этой странице</p>
+        {% else %}
+        <p>Пожалуйста авторизуйтесь, чтобы получить доступ к этой старанице</p>
+        {% endif %}
+    {% endif %}
+
+    <form method="post" action="{% url 'registration:login' %}">
+    {% csrf_token %}
+        <table>
+        <tr>
+            <td>{{ form.username.label_tag }}</td>
+            <td>{{ form.username }}</td>
+        </tr>
+        <tr>
+            <td>{{ form.password.label_tag }}</td>
+            <td>{{ form.password }}</td>
+        </tr>
+        </table>
+
+    <input type="submit" value="Войти" class="btn controls">
+    <input type="hidden" name="next" value="{{ next }}">
     </form>
+
 {% endblock %}
