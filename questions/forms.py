@@ -3,6 +3,7 @@ from questions.models import Questions, Answers
 
 
 class QuestionCreateForm(forms.ModelForm):
+    """Форма для добавления нового вопроса"""
 
     class Meta:
         model = Questions
@@ -19,7 +20,7 @@ class QuestionCreateForm(forms.ModelForm):
 
 
 class AnswerCreateForm(forms.ModelForm):
-
+    """Форма для добавления ответа на вопрос"""
     class Meta:
         model = Answers
         fields = ['body']

@@ -1,10 +1,6 @@
 from django.shortcuts import render
-from django.views.generic import TemplateView, FormView, CreateView
-from django.http import HttpResponseRedirect
-from django.contrib import auth
+from django.views.generic import FormView, CreateView
 from django.contrib.auth.views import LogoutView, LoginView
-from django.urls import reverse
-from django.contrib.auth.models import User
 
 from registration.forms import UserForm, UserProfileForm
 from registration.models import UserProfile

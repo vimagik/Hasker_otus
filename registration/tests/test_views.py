@@ -5,7 +5,6 @@ from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from registration.models import UserProfile
-from registration.forms import UserForm
 
 
 class LoginViewTest(TestCase):

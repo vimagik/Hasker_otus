@@ -21,8 +21,7 @@ class IndexView(ListView):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         if self.request.user.is_authenticated:
-            profile = UserProfile.objects.get(user=self.request.user)
-            context['photo'] = profile.photo
+            context['photo'] = self.request.user.userprofile.photo
         if self.request.session.get('order') == 'date':
             context['order_date'] = 'active'
         else:
@@ -48,7 +47,6 @@ class IndexView(ListView):
         ).order_by(order)
 
 
-
 class CreateQuestionView(TemplateView):
     """
     Страница по созданию нового вопроса
@@ -59,8 +57,7 @@ class CreateQuestionView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['form'] = QuestionCreateForm()
         if self.request.user.is_authenticated:
-            profile = UserProfile.objects.get(user=self.request.user)
-            context['photo'] = profile.photo
+            context['photo'] = self.request.user.userprofile.photo
         context['trends'] = Questions.get_trends()
         return context
 
@@ -101,8 +98,7 @@ class QuestionView(ListView):
         context['number_question_votes'] = number_question_votes
         context['question'] = self.question
         if self.request.user.is_authenticated:
-            profile = UserProfile.objects.get(user=self.request.user)
-            context['photo'] = profile.photo
+            context['photo'] = self.request.user.userprofile.photo
             if self.request.user != self.question.author:
                 context['disabled_correct_answer'] = 'disabled'
         else:
