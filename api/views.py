@@ -16,7 +16,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 
 
 class GetQuestion(viewsets.ModelViewSet):
-    """Стандартная view для Question"""
+    """Standart view for Question"""
     serializer_class = QuestionSerializer
     queryset = Questions.objects.all()
     authentication_classes = (BasicAuthentication,)
@@ -61,4 +61,3 @@ class GetAnswers(viewsets.ModelViewSet):
     def get_queryset(self):
         pk = self.kwargs.get('pk')
         return Answers.objects.filter(question_id=pk)
-

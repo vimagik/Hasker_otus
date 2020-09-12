@@ -16,6 +16,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'questions',
     'registration',
+    'api',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -109,3 +110,14 @@ MEDIA_ROOT = os.path.join(BASE_DIR, '../../media/')
 
 LOGIN_URL = '/auth/login/'
 LOGIN_REDIRECT_URL = '/'
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'TEST_REQUEST_RENDERER_CLASSES': [
+            'rest_framework.renderers.MultiPartRenderer',
+            'rest_framework.renderers.JSONRenderer',
+            'rest_framework.renderers.TemplateHTMLRenderer'
+        ]
+
+}
