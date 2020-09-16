@@ -1,7 +1,7 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404
 from django.db.models import Count
 from django.db import transaction
-from django.views.generic import TemplateView, RedirectView, ListView
+from django.views.generic import RedirectView, ListView, CreateView
 from django.core.mail import send_mail
 from django.urls import reverse
 
@@ -47,36 +47,33 @@ class IndexView(ListView):
         ).order_by(order)
 
 
-class CreateQuestionView(TemplateView):
+class CreateQuestionView(CreateView):
     """
     Страница по созданию нового вопроса
     """
     template_name = 'questions/new_question.html'
+    form_class = QuestionCreateForm
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['form'] = QuestionCreateForm()
         if self.request.user.is_authenticated:
             context['photo'] = self.request.user.userprofile.photo
         context['trends'] = Questions.get_trends()
         return context
 
-    def post(self, request):
-        form = QuestionCreateForm(request.POST)
-        if form.is_valid():
-            new_question = Questions(
-                title=form.cleaned_data['title'],
-                body=form.cleaned_data['body'],
-                author=request.user
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.author = self.request.user
+        self.object.save()
+        for tag in form.cleaned_data['tags'].split(','):
+            new_tag, _ = Tags.objects.get_or_create(
+                name=tag
             )
-            new_question.save()
-            for tag in form.cleaned_data['tags'].split(','):
-                new_tag, _ = Tags.objects.get_or_create(
-                    name=tag
-                )
-                new_question.tags.add(new_tag)
-            return redirect(f'/question/{new_question.id}/')
-        return render(request, self.template_name, {'form': form})
+            self.object.tags.add(new_tag)
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('questions:questionview', args=[self.object.id])
 
 
 class QuestionView(ListView):
